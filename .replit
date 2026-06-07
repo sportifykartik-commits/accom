@@ -64,13 +64,13 @@ waitForPort = 5000
 name = "Start Backend"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pnpm --filter @workspace/api-server dev"
-waitForPort = 8080
-
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd artifacts/api-server && NODE_ENV=development tsx ./src/dev.ts"
+waitForPort = 8080
 
 [agent]
 stack = "BEST_EFFORT_FALLBACK"
