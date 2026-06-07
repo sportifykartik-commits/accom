@@ -222,10 +222,12 @@ router.get("/", requireVolunteer, async (req: AuthRequest, res) => {
       rollNumber: usersTable.rollNumber,
       phone: usersTable.phone,
       contactNumber: usersTable.contactNumber,
+      gender: usersTable.gender,
       area: usersTable.area,
       hostelId: usersTable.hostelId,
       roomNumber: usersTable.roomNumber,
       assignedMess: usersTable.assignedMess,
+      messCardNo: usersTable.messCardNo,
       attendanceStatus: usersTable.attendanceStatus,
       isActive: usersTable.isActive,
       createdAt: usersTable.createdAt,
@@ -283,10 +285,9 @@ router.get("/", requireVolunteer, async (req: AuthRequest, res) => {
     }
   }
 
-  const students = await Promise.all(rows.map(async (s) => {
+  const students = rows.map((s) => {
     const inv = inventoryMap.get(s.id);
     const checkin = checkinMap.get(s.id);
-    const csv = await getCsvSupplement(s.email, s.rollNumber);
     return {
       ...s,
       messCard: !!inv?.messCard,
@@ -296,17 +297,14 @@ router.get("/", requireVolunteer, async (req: AuthRequest, res) => {
       checkInTime: checkin?.checkInTime?.toISOString() || null,
       checkOutTime: checkin?.checkOutTime?.toISOString() || null,
       checkedInByName: checkin?.volunteerId ? (staffNameById.get(checkin.volunteerId) || null) : null,
-      gender: csv?.gender || null,
-      allottedHostel: csv?.allottedHostel || s.hostelName || null,
-      allottedMess: csv?.allottedMess || s.assignedMess || null,
-      remarks: csv?.remarks || null,
-      mobileNumber: csv?.mobileNumber || s.contactNumber || s.phone || null,
-      emergencyContact: csv?.emergencyContact || null,
-      age: csv?.age || null,
-      dsEs: csv?.dsEs || null,
+      gender: s.gender || null,
+      allottedHostel: s.hostelName || s.hostelId || null,
+      allottedMess: s.assignedMess || null,
+      mobileNumber: s.contactNumber || s.phone || null,
+      messCardNo: s.messCardNo || null,
       createdAt: s.createdAt.toISOString(),
     };
-  }));
+  });
 
   // Support both legacy (array) and new (paginated object) consumers
   res.json({ students, total: Number(total), page: Math.floor(off / lim) + 1, limit: lim });
@@ -346,10 +344,12 @@ router.get("/:id", requireAuth, async (req: AuthRequest, res) => {
       rollNumber: usersTable.rollNumber,
       phone: usersTable.phone,
       contactNumber: usersTable.contactNumber,
+      gender: usersTable.gender,
       area: usersTable.area,
       hostelId: usersTable.hostelId,
       roomNumber: usersTable.roomNumber,
       assignedMess: usersTable.assignedMess,
+      messCardNo: usersTable.messCardNo,
       attendanceStatus: usersTable.attendanceStatus,
       createdAt: usersTable.createdAt,
       hostelName: hostelsTable.name,
@@ -374,8 +374,6 @@ router.get("/:id", requireAuth, async (req: AuthRequest, res) => {
     eq(checkinsTable.date, todayStr()),
   ));
 
-  const csv = await getCsvSupplement(student.email, student.rollNumber);
-
   res.json({
     ...student,
     messCard: !!inv?.messCard,
@@ -383,14 +381,11 @@ router.get("/:id", requireAuth, async (req: AuthRequest, res) => {
     messCardRevokedAt: inv?.messCardRevokedAt?.toISOString() || null,
     checkInTime: todayCheckin?.checkInTime?.toISOString() || null,
     checkOutTime: todayCheckin?.checkOutTime?.toISOString() || null,
-    gender: csv?.gender || null,
-    allottedHostel: csv?.allottedHostel || student.hostelName || null,
-    allottedMess: csv?.allottedMess || student.assignedMess || null,
-    remarks: csv?.remarks || null,
-    mobileNumber: csv?.mobileNumber || student.contactNumber || student.phone || null,
-    emergencyContact: csv?.emergencyContact || null,
-    age: csv?.age || null,
-    dsEs: csv?.dsEs || null,
+    gender: student.gender || null,
+    allottedHostel: student.hostelName || student.hostelId || null,
+    allottedMess: student.assignedMess || null,
+    mobileNumber: student.contactNumber || student.phone || null,
+    messCardNo: student.messCardNo || null,
     createdAt: student.createdAt.toISOString(),
   });
 });

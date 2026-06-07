@@ -21,6 +21,7 @@ import messAttendanceRouter from "./mess-attendance.js";
 import approvalsRouter from "./approvals.js";
 import eventsRouter from "./events.js";
 import seedInitRouter from "./seed-init.js";
+import restoreRouter from "./restore.js";
 
 const router: IRouter = Router();
 
@@ -47,5 +48,6 @@ router.use("/mess-attendance", messAttendanceRouter);
 router.use("/approvals", approvalsRouter);
 router.use("/events", eventsRouter);
 router.use("/admin", seedInitRouter);
+router.use("/admin", restoreRouter);
 
 export default router;
